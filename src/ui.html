@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <style>
+      body { font-family: sans-serif; margin: 10px; }
+      label { display: block; margin-bottom: 5px; font-weight: bold; }
+      select, input[type="text"] { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+      button { background-color: #4CAF50; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; float: right; }
+      button:hover { background-color: #45a049; }
+      .container { padding: 10px; background-color: #f2f2f2; border-radius: 5px; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Compare Soldiers</h2>
+      <form>
+        <label for="sheet1Select">בחר גיליון פלוגה:</label>
+        <select id="sheet1Select"></select>
+
+        <label for="sheet2Select">בחר גיליון גדודי:</label>
+        <select id="sheet2Select"></select>
+
+        <label for="outputSheetNameInput">Output Report Sheet Name:</label>
+        <input type="text" id="outputSheetNameInput" value="Comparison Report">
+
+        <button type="button" onclick="saveAndCompare()">Compare</button>
+      </form>
+    </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        google.script.run.withSuccessHandler(populateSheetDropdowns).getSheets();
+        google.script.run.withSuccessHandler(loadSavedProperties).loadProperties();
+      });
+
+      function populateSheetDropdowns(sheetNames) {
+        const sheet1Select = document.getElementById('sheet1Select');
+        const sheet2Select = document.getElementById('sheet2Select');
+
+        sheetNames.forEach(sheetName => {
+          const option1 = document.createElement('option');
+          option1.value = sheetName;
+          option1.textContent = sheetName;
+          sheet1Select.appendChild(option1);
+
+          const option2 = document.createElement('option');
+          option2.value = sheetName;
+          option2.textContent = sheetName;
+          sheet2Select.appendChild(option2);
+        });
+      }
+
+      function loadSavedProperties(props) {
+        const sheet1Select = document.getElementById('sheet1Select');
+        const sheet2Select = document.getElementById('sheet2Select');
+        const outputSheetNameInput = document.getElementById('outputSheetNameInput');
+
+        if (props.sheet1Name) {
+          sheet1Select.value = props.sheet1Name;
+        }
+        if (props.sheet2Name) {
+          sheet2Select.value = props.sheet2Name;
+        }
+        if (props.outputSheetName) {
+          outputSheetNameInput.value = props.outputSheetName;
+        }
+      }
+
+      function saveAndCompare() {
+        const sheet1Name = document.getElementById('sheet1Select').value;
+        const sheet2Name = document.getElementById('sheet2Select').value;
+        const outputSheetName = document.getElementById('outputSheetNameInput').value;
+
+        google.script.run.saveProperties({
+          sheet1Name: sheet1Name,
+          sheet2Name: sheet2Name,
+          outputSheetName: outputSheetName
+        });
+
+        google.script.run.withSuccessHandler(google.script.host.close).compareSheets(sheet1Name, sheet2Name, outputSheetName);
+      }
+    </script>
+  </body>
+</html>
