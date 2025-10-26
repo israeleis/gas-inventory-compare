@@ -1,7 +1,7 @@
 /**
  * Reads mappings from a sheet named 'mappings'.
  * The sheet should have 4 columns: פלוגה, סוג מיפוי, ערך מקור, ערך יעד.
- * @param {string} platoonName - The name of the platoon to filter mappings for.
+ * @param {string} [platoonName] - Optional. The name of the platoon to filter mappings for. If not provided, all mappings are returned.
  * @returns {object} An object containing the mappings.
  */
 function getMappingsFromSheet(platoonName) {
@@ -38,8 +38,8 @@ function getMappingsFromSheet(platoonName) {
 
     const mappingType = HEBREW_TO_MAPPING_TYPE[hebrewMappingType];
 
-    // Apply mapping if it's global (no platoon specified) or matches the platoonName
-    if (!mappingPlatoon || mappingPlatoon === platoonName) {
+    // Apply mapping if it's global (no platoon specified) or matches the platoonName, or if no platoonName is provided.
+    if (!platoonName || !mappingPlatoon || mappingPlatoon === platoonName) {
       if (mappingType === 'typeMapping' && fromValue && toValue) {
         mappings.typeMapping[fromValue] = toValue;
       } else if (mappingType === 'squadMapping' && fromValue && toValue) {

@@ -97,8 +97,9 @@ function runCompareIssues() {
   const sheet1Name = "all_normalized"; // User-specified first sheet name
   const sheet2Name = "gdud"; // User-specified second sheet name
   const outputSheetName = "all_issues_diff"; // Default output sheet name
+  const mappings = getMappingsFromSheet(); // Get all mappings
 
-  compareIssues(sheet1Name, sheet2Name, outputSheetName);
+  compareIssues(sheet1Name, sheet2Name, outputSheetName, mappings);
 }
 
 function runTransformPlugaA() {

@@ -8,11 +8,6 @@ function transformDataPlugaC(outputSheetName) {
     return;
   }
 
-  const mappings = getMappingsFromSheet(platoonName);
-  if (!mappings) return; // Stop if mappings sheet is not found
-
-  const { typeMapping, squadMapping, emptyIdentifierTypes, ignoreTypes } = mappings;
-
   const data = inputSheet.getDataRange().getValues();
   const headerRow = data[0];
 
@@ -35,24 +30,10 @@ function transformDataPlugaC(outputSheetName) {
     }
     platoonPersonalIds.add(personalId); // Add personal ID to the set
 
-    // Apply squad mapping
-    if (squadMapping[platoon]) {
-      platoon = squadMapping[platoon];
-    }
-
     // Process paired columns
     for (const pair of itemColumns) {
       let type = row[pair[0]];
       let value = String(row[pair[1]]).trim();
-
-      // Apply type mapping first
-      if (typeMapping[type]) {
-        type = typeMapping[type];
-      }
-
-      if (ignoreTypes.includes(type)) {
-        continue; // Skip this item
-      }
 
       // Re-introduce the "V" logic for paired columns if type exists and value is empty
       if (type && !value) { // If type exists and value is empty after trimming
@@ -60,9 +41,6 @@ function transformDataPlugaC(outputSheetName) {
       }
 
       if (type && value) { // This is where the item is added
-        if (emptyIdentifierTypes.includes(type)) {
-          value = ''; // Set value to empty if type is in the list
-        }
         newData.push([platoonName, platoon, personalId, lastName, firstName, type, 1, value, 'מנופק']);
       }
     }
@@ -72,19 +50,7 @@ function transformDataPlugaC(outputSheetName) {
       let type = headerRow[colIndex];
       let value = String(row[colIndex]).trim();
 
-      // Apply type mapping first
-      if (typeMapping[type]) {
-        type = typeMapping[type];
-      }
-
-      if (ignoreTypes.includes(type)) {
-        continue; // Skip this item
-      }
-
       if (value) {
-        if (emptyIdentifierTypes.includes(type)) {
-          value = ''; // Set value to empty if type is in the list
-        }
         newData.push([platoonName, platoon, personalId, lastName, firstName, type, 1, value, 'מנופק']);
       }
     }

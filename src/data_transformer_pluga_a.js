@@ -8,11 +8,6 @@ function transformDataPlugaA(outputSheetName) {
     return;
   }
 
-  const mappings = getMappingsFromSheet(platoonName);
-  if (!mappings) return; // Stop if mappings sheet is not found
-
-  const { typeMapping, squadMapping, emptyIdentifierTypes, ignoreTypes } = mappings;
-
   const data = inputSheet.getDataRange().getValues();
   const headerRow = data[0];
 
@@ -35,30 +30,12 @@ function transformDataPlugaA(outputSheetName) {
     }
     platoonPersonalIds.add(personalId); // Add personal ID to the set
 
-    // Apply squad mapping
-    if (squadMapping[squad]) {
-      squad = squadMapping[squad];
-    }
-
     // Process all item columns from index 7 to the end
     for (let colIndex = itemColumnStartIndex; colIndex < headerRow.length; colIndex++) {
       let type = headerRow[colIndex];
       let value = String(row[colIndex]).trim();
 
       if (type && value) { // Only process if there is a type and a value
-        // Apply type mapping first
-        if (typeMapping[type]) {
-          type = typeMapping[type];
-        }
-
-        if (ignoreTypes.includes(type)) {
-          continue; // Skip this item
-        }
-
-        if (emptyIdentifierTypes.includes(type)) {
-          value = ''; // Set value to empty if type is in the list
-        }
-        
         // For this sheet, the quantity is always 1 for each item found.
         // The cell value is the identifier.
         const quantity = 1;

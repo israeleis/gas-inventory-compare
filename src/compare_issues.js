@@ -1,4 +1,4 @@
-function compareIssues(sheet1Name, sheet2Name, outputSheetName) {
+function compareIssues(sheet1Name, sheet2Name, outputSheetName, mappings) {
   Logger.log(`Starting issue-based comparison between "${sheet1Name}" and "${sheet2Name}".`);
   const ss = SpreadsheetApp.getActiveSpreadsheet();
 
@@ -14,8 +14,50 @@ function compareIssues(sheet1Name, sheet2Name, outputSheetName) {
     return;
   }
 
-  const data1 = sheet1.getDataRange().getValues();
-  const data2 = sheet2.getDataRange().getValues();
+  let data1 = sheet1.getDataRange().getValues();
+  let data2 = sheet2.getDataRange().getValues();
+
+  const header1 = data1.shift(); // Remove header row
+  const header2 = data2.shift(); // Remove header row
+
+  // Function to apply mappings to a dataset
+  const applyMappings = (data, header) => {
+    const itemTypeCol = header.indexOf('סוג פריט');
+    const squadCol = header.indexOf('מחלקה');
+
+    if (!mappings) return data;
+
+    const mappedData = data.map(row => {
+      let itemType = row[itemTypeCol];
+      let squad = row[squadCol];
+
+      // Apply type mapping
+      if (mappings.typeMapping && mappings.typeMapping[itemType]) {
+        itemType = mappings.typeMapping[itemType];
+      }
+
+      // Apply squad mapping
+      if (mappings.squadMapping && mappings.squadMapping[squad]) {
+        squad = mappings.squadMapping[squad];
+      }
+
+      // Check if item type should be ignored
+      if (mappings.ignoreTypes && mappings.ignoreTypes.includes(itemType)) {
+        return null; // This row will be filtered out
+      }
+
+      const newRow = [...row];
+      newRow[itemTypeCol] = itemType;
+      newRow[squadCol] = squad;
+      return newRow;
+    });
+
+    return mappedData.filter(row => row !== null);
+  };
+
+  data1 = applyMappings(data1, header1);
+  data2 = applyMappings(data2, header2);
+
 
   // Assuming headers are in the first row and in the order:
   // ['פלוגה', 'מחלקה', 'מספר אישי', 'שם משפחה', 'שם פרטי', 'סוג פריט', 'כמות', 'מזהה', 'סטטוס']
@@ -29,7 +71,7 @@ function compareIssues(sheet1Name, sheet2Name, outputSheetName) {
   const statusCol = 8; // 0-indexed for 'סטטוס'
 
   const soldierData1 = {};
-  for (let i = 1; i < data1.length; i++) {
+  for (let i = 0; i < data1.length; i++) {
     const row = data1[i];
     const personalId = row[personalIdCol] ? String(row[personalIdCol]).trim() : null;
     if (personalId) {
@@ -51,7 +93,7 @@ function compareIssues(sheet1Name, sheet2Name, outputSheetName) {
   }
 
   const soldierData2 = {};
-  for (let i = 1; i < data2.length; i++) {
+  for (let i = 0; i < data2.length; i++) {
     const row = data2[i];
     const personalId = row[personalIdCol] ? String(row[personalIdCol]).trim() : null;
     if (personalId) {
